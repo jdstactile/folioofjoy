@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import {
-  ChevronUp,
+  ChevronRight,
   Play,
   Pause,
   SkipBack,
@@ -62,16 +62,16 @@ export function FloatingPill({
   };
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+    <div className="fixed right-6 top-1/2 -translate-y-1/2 z-50 flex items-center gap-3">
       {/* Song Queue Panel */}
       <div
-        className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-[90vw] max-w-2xl transition-all duration-300 ease-out ${
+        className={`absolute right-full top-1/2 -translate-y-1/2 mr-3 w-72 transition-all duration-300 ease-out ${
           isOpen && !showHelp
-            ? 'opacity-100 translate-y-0 pointer-events-auto'
-            : 'opacity-0 translate-y-4 pointer-events-none'
+            ? 'opacity-100 translate-x-0 pointer-events-auto'
+            : 'opacity-0 translate-x-4 pointer-events-none'
         }`}
       >
-        <div className="bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl p-4 shadow-2xl max-h-96 overflow-y-auto">
+        <div className="bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl p-4 shadow-2xl max-h-[70vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-medium text-muted-foreground">
               Song Queue
@@ -119,10 +119,10 @@ export function FloatingPill({
 
       {/* Help Panel */}
       <div
-        className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-[90vw] max-w-md transition-all duration-300 ease-out ${
+        className={`absolute right-full top-1/2 -translate-y-1/2 mr-3 w-80 transition-all duration-300 ease-out ${
           showHelp
-            ? 'opacity-100 translate-y-0 pointer-events-auto'
-            : 'opacity-0 translate-y-4 pointer-events-none'
+            ? 'opacity-100 translate-x-0 pointer-events-auto'
+            : 'opacity-0 translate-x-4 pointer-events-none'
         }`}
       >
         <div className="bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl p-5 shadow-2xl">
@@ -157,31 +157,26 @@ export function FloatingPill({
         </div>
       </div>
 
-      {/* Pill Bar */}
-      <div className="bg-card/90 backdrop-blur-xl border border-border/50 rounded-full px-2 py-2 shadow-2xl flex items-center gap-1">
+      {/* Vertical Toolbar */}
+      <div className="bg-card/90 backdrop-blur-xl border border-border/50 rounded-full px-2 py-2 shadow-2xl flex flex-col items-center gap-1">
         {/* Album Art & Song Info */}
         <button
           onClick={() => { setIsOpen(!isOpen); setShowHelp(false); }}
-          className={`flex items-center gap-2 px-2 py-2 rounded-full transition-all ${
+          className={`flex flex-col items-center gap-1 p-2 rounded-full transition-all ${
             isOpen ? 'bg-primary/20 text-primary' : 'hover:bg-secondary'
           }`}
+          title={currentTrack ? `${currentTrack.name} — ${currentTrack.artists[0]?.name}` : 'No track'}
         >
-          {currentTrack?.album?.images[0]?.url && (
+          {currentTrack?.album?.images[0]?.url ? (
             <img
               src={currentTrack.album.images[0].url}
               alt="Album art"
               className="w-8 h-8 rounded-lg object-cover"
             />
+          ) : (
+            <div className="w-8 h-8 rounded-lg bg-secondary" />
           )}
-          <div className="flex flex-col text-left">
-            <span className="text-xs font-semibold truncate max-w-[120px] leading-tight">
-              {currentTrack?.name || 'No track'}
-            </span>
-            <span className="text-xs text-muted-foreground truncate max-w-[120px]">
-              {currentTrack?.artists[0]?.name || 'Unknown'}
-            </span>
-          </div>
-          <ChevronUp
+          <ChevronRight
             className={`w-3 h-3 transition-transform flex-shrink-0 ${
               isOpen ? 'rotate-180' : ''
             }`}
@@ -189,7 +184,7 @@ export function FloatingPill({
         </button>
 
         {/* Divider */}
-        <div className="w-px h-6 bg-border/50" />
+        <div className="h-px w-6 bg-border/50" />
 
         {/* Playback Controls */}
         <button
@@ -238,12 +233,12 @@ export function FloatingPill({
         </button>
 
         {/* Time Display */}
-        <div className="text-xs font-mono text-muted-foreground px-2">
+        <div className="text-[10px] font-mono text-muted-foreground px-1">
           {formatTime(currentTime)}
         </div>
 
         {/* Divider */}
-        <div className="w-px h-6 bg-border/50" />
+        <div className="h-px w-6 bg-border/50" />
 
         {/* Restart Pattern */}
         <button
