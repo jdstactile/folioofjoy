@@ -31,6 +31,7 @@ export function WorkLink() {
   const [carouselVisible, setCarouselVisible] = useState(false);
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; angle: number; speed: number; size: number }>>([]);
   const [captionKey, setCaptionKey] = useState(0);
+  const [zoomedIdx, setZoomedIdx] = useState<number | null>(null);
 
   const next = useCallback(() => {
     setCurrentIndex((i) => (i + 1) % WORK_ITEMS.length);
@@ -148,8 +149,8 @@ export function WorkLink() {
           }`}
           onClick={closeCarousel}
         >
-          {/* Backdrop */}
-          <div className={`absolute inset-0 bg-black/90 backdrop-blur-sm transition-all duration-400 ${
+          {/* Backdrop — fully opaque on mobile */}
+          <div className={`absolute inset-0 bg-black md:bg-black/90 backdrop-blur-sm transition-all duration-400 ${
             carouselVisible ? 'opacity-100' : 'opacity-0'
           }`} />
 
@@ -186,7 +187,7 @@ export function WorkLink() {
 
           {/* Carousel content */}
           <div
-            className="relative z-10 flex flex-col items-center gap-6 max-w-5xl w-full px-20"
+            className="relative z-10 flex flex-col items-center gap-6 max-w-5xl w-full px-4 md:px-20"
             onClick={(e) => e.stopPropagation()}
           >
             {/* 3-card stack — render each item, position by offset from current */}
@@ -203,12 +204,12 @@ export function WorkLink() {
                 return (
                   <div
                     key={idx}
-                    className="absolute cursor-pointer"
+                    className="absolute cursor-pointer overflow-hidden rounded-2xl"
                     style={{
                       transform: carouselVisible
                         ? `translateX(${offset * 70}%) scale(${isCenter ? 1 : 0.8})`
                         : `translateX(${offset * 30}%) scale(0.7)`,
-                      zIndex: isCenter ? 10 : isVisible ? 5 : 1,
+                      zIndex: isCenter ? (zoomedIdx === idx ? 20 : 10) : isVisible ? 5 : 1,
                       opacity: carouselVisible ? (isCenter ? 1 : isVisible ? 0.4 : 0) : 0,
                       filter: isCenter ? 'none' : 'blur(2px)',
                       transition: 'all 700ms cubic-bezier(0.16, 1, 0.3, 1)',
@@ -217,13 +218,19 @@ export function WorkLink() {
                     onClick={(e) => {
                       e.stopPropagation();
                       if (offset === -1) prev();
-                      if (offset === 1) next();
+                      else if (offset === 1) next();
+                      else setZoomedIdx(zoomedIdx === idx ? null : idx);
                     }}
+                    onMouseEnter={() => { if (isCenter) setZoomedIdx(idx); }}
+                    onMouseLeave={() => { if (zoomedIdx === idx) setZoomedIdx(null); }}
                   >
                     <img
                       src={item.src}
                       alt={item.caption}
-                      className="rounded-2xl shadow-2xl border border-white/10 object-contain max-h-[60vh] max-w-full"
+                      className="shadow-2xl border border-white/10 object-contain max-h-[60vh] max-w-full transition-transform duration-500 ease-out"
+                      style={{
+                        transform: zoomedIdx === idx ? 'scale(1.5)' : 'scale(1)',
+                      }}
                     />
                   </div>
                 );

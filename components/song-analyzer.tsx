@@ -7,6 +7,10 @@ import { FloatingPill } from './floating-pill';
 import { HeroOverlay } from './hero-overlay';
 import { PatternGuide } from './pattern-guide';
 import { ExploreToolbar } from './explore-toolbar';
+import { MobileMenu } from './mobile-menu';
+import { ScrollReveal } from './scroll-reveal';
+import { WorkLink } from './work-preview';
+import { ExperimentsLink } from './experiments-preview';
 import { getTracks, searchTrackLyrics, type Track, type PlaylistType } from '@/lib/music';
 import { extractDominantColor, DEFAULT_THEME, type ThemeColors } from '@/lib/color';
 
@@ -36,13 +40,9 @@ export function SongAnalyzer() {
   });
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  // Sync explore settings shades with theme
   useEffect(() => {
     setExploreSettings((s) => ({
-      ...s,
-      shades: theme.shades,
-      hue: theme.hue,
-      saturation: theme.saturation,
+      ...s, shades: theme.shades, hue: theme.hue, saturation: theme.saturation,
     }));
   }, [theme]);
 
@@ -54,12 +54,8 @@ export function SongAnalyzer() {
         setTracks(fetchedTracks);
         if (fetchedTracks.length > 0) setCurrentTrack(fetchedTracks[0]);
         setError(null);
-      } catch (err) {
-        console.error('Error loading tracks:', err);
-        setError(null);
-      } finally {
-        setLoading(false);
-      }
+      } catch (err) { console.error('Error loading tracks:', err); setError(null); }
+      finally { setLoading(false); }
     }
     loadTracks();
   }, [playlist]);
@@ -78,10 +74,7 @@ export function SongAnalyzer() {
         const trackName = currentTrack.name;
         const fetchedLyrics = await searchTrackLyrics(trackName, artistName);
         setLyrics(fetchedLyrics || 'No lyrics available for this track');
-      } catch (err) {
-        console.error('Failed to fetch lyrics:', err);
-        setLyrics('Failed to load lyrics');
-      }
+      } catch (err) { console.error('Failed to fetch lyrics:', err); setLyrics('Failed to load lyrics'); }
     }
     fetchLyrics();
   }, [currentTrack]);
@@ -93,72 +86,52 @@ export function SongAnalyzer() {
     const handleEnded = () => { setIsPlaying(false); playNext(); };
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('ended', handleEnded);
-    return () => {
-      audio.removeEventListener('timeupdate', handleTimeUpdate);
-      audio.removeEventListener('ended', handleEnded);
-    };
+    return () => { audio.removeEventListener('timeupdate', handleTimeUpdate); audio.removeEventListener('ended', handleEnded); };
   }, [tracks, currentTrack]);
 
   const playTrack = async (track: Track) => {
-    setCurrentTrack(track);
-    setCurrentTime(0);
+    setCurrentTrack(track); setCurrentTime(0);
     if (audioRef.current && track.preview_url) {
       audioRef.current.src = track.preview_url;
-      try { await audioRef.current.play(); setIsPlaying(true); }
-      catch { setIsPlaying(false); }
+      try { await audioRef.current.play(); setIsPlaying(true); } catch { setIsPlaying(false); }
     } else { setIsPlaying(false); }
   };
 
   const togglePlayPause = () => {
     if (!audioRef.current || !currentTrack?.preview_url) return;
     if (isPlaying) { audioRef.current.pause(); setIsPlaying(false); }
-    else {
-      audioRef.current.src = currentTrack.preview_url;
-      audioRef.current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
-    }
+    else { audioRef.current.src = currentTrack.preview_url; audioRef.current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false)); }
   };
 
-  const toggleMute = () => {
-    if (audioRef.current) { audioRef.current.muted = !isMuted; setIsMuted(!isMuted); }
-  };
+  const toggleMute = () => { if (audioRef.current) { audioRef.current.muted = !isMuted; setIsMuted(!isMuted); } };
 
   const playNext = () => {
-    const currentIndex = tracks.findIndex((t) => t.id === currentTrack?.id) ?? -1;
-    const nextIndex = (currentIndex + 1) % tracks.length;
-    if (tracks[nextIndex]) playTrack(tracks[nextIndex]);
+    const ci = tracks.findIndex((t) => t.id === currentTrack?.id) ?? -1;
+    if (tracks[(ci + 1) % tracks.length]) playTrack(tracks[(ci + 1) % tracks.length]);
   };
 
   const playPrevious = () => {
-    const currentIndex = tracks.findIndex((t) => t.id === currentTrack?.id) ?? -1;
-    const prevIndex = (currentIndex - 1 + tracks.length) % tracks.length;
-    if (tracks[prevIndex]) playTrack(tracks[prevIndex]);
+    const ci = tracks.findIndex((t) => t.id === currentTrack?.id) ?? -1;
+    if (tracks[(ci - 1 + tracks.length) % tracks.length]) playTrack(tracks[(ci - 1 + tracks.length) % tracks.length]);
   };
 
   const handleRestart = useCallback(() => { setRestartKey((k) => k + 1); }, []);
 
   const enterExplore = useCallback(() => {
-    setExploreMode(true);
-    setHoveredCell(null);
-    setRestartKey((k) => k + 1);
+    setExploreMode(true); setHoveredCell(null); setRestartKey((k) => k + 1);
   }, []);
 
   const exitExplore = useCallback(() => {
-    setExploreMode(false);
-    setHoveredCell(null);
-    // Reset to defaults
+    setExploreMode(false); setHoveredCell(null);
     setExploreSettings((s) => ({ ...s, wave: 'center', colorMode: 'white', shapeMode: 'circles-ripple' }));
     setRestartKey((k) => k + 1);
   }, []);
 
   const { words, wordMap } = useMemo(() => {
     if (!lyrics) return { words: [], wordMap: new Map() };
-    const normalized = lyrics.toLowerCase().split(/[\s\n]+/)
-      .map((word) => word.replace(/[^\w]/g, '')).filter((word) => word.length > 0);
+    const normalized = lyrics.toLowerCase().split(/[\s\n]+/).map((w) => w.replace(/[^\w]/g, '')).filter((w) => w.length > 0);
     const map = new Map<string, number[]>();
-    normalized.forEach((word, index) => {
-      if (!map.has(word)) map.set(word, []);
-      map.get(word)!.push(index);
-    });
+    normalized.forEach((word, index) => { if (!map.has(word)) map.set(word, []); map.get(word)!.push(index); });
     return { words: normalized, wordMap: map };
   }, [lyrics]);
 
@@ -170,114 +143,116 @@ export function SongAnalyzer() {
   }, [exploreMode, hoveredCell, words, wordMap, showSingleMatches]);
 
   return (
-    <div
-      className="relative w-full h-screen overflow-hidden transition-colors duration-1000 ease-in-out"
-      style={{ backgroundColor: theme.background }}
-    >
+    <div className={`relative w-full transition-colors duration-1000 ease-in-out${exploreMode ? ' h-screen overflow-hidden' : ''}`} style={{ backgroundColor: theme.background }}>
       <audio ref={audioRef} crossOrigin="anonymous" muted={isMuted} />
 
-      {/* Full-screen Matrix */}
-      {words.length > 0 && (
-        <MatrixVisualization
-          words={words}
-          wordMap={wordMap}
-          showSingleMatches={showSingleMatches}
-          opacity={exploreMode ? 1 : dimmed ? 0.08 : 0.35}
-          restartKey={restartKey}
-          backgroundColor={theme.backgroundRgb}
-          onCellHover={exploreMode ? setHoveredCell : undefined}
-          exploreSettings={exploreSettings}
-        />
-      )}
-
-      {/* Hero Text Overlay — hidden in explore mode */}
-      <div className={`transition-opacity duration-500 ${exploreMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-        <HeroOverlay accentColor={theme.accent} toolbarColor={theme.toolbar} />
-      </div>
-
-      {/* Social links — top left */}
-      <div className={`fixed top-7 left-8 z-50 flex items-center gap-5 transition-opacity duration-500 ${exploreMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-        <a href="https://www.instagram.com/joyingntravelling/" target="_blank" rel="noopener noreferrer" className="text-sm font-sans text-white/40 hover:text-white transition-colors">
-          Instagram
-        </a>
-        <a href="https://www.threads.com/@joydeep.roni" target="_blank" rel="noopener noreferrer" className="text-sm font-sans text-white/40 hover:text-white transition-colors">
-          Threads
-        </a>
-        <a href="https://www.linkedin.com/in/joydeeproni/" target="_blank" rel="noopener noreferrer" className="text-sm font-sans text-white/40 hover:text-white transition-colors">
-          LinkedIn
-        </a>
-      </div>
-
-      {/* Hovered word tooltip — explore mode only */}
-      {hoveredWord && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-40 px-4 py-2">
-          <span className="text-white font-mono font-semibold">{hoveredWord}</span>
-          <span className="text-white/40 text-sm ml-2">
-            {wordMap.get(hoveredWord)?.length || 0} matches
-          </span>
-        </div>
-      )}
-
-      {/* Pattern guide — explore mode, left side */}
-      <PatternGuide active={exploreMode} restartKey={restartKey} />
-
-      {/* "What's this pattern?" — top right */}
-      <button
-        onClick={() => { if (exploreMode) exitExplore(); else enterExplore(); }}
-        className={`fixed top-6 right-6 z-50 flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
-          exploreMode ? 'text-white' : 'text-white/50 hover:text-white'
-        }`}
-      >
-        {exploreMode ? (
-          <>
-            <X className="w-4 h-4" />
-            <span className="text-sm font-sans">Back</span>
-          </>
-        ) : (
-          <>
-            <HelpCircle className="w-4 h-4" />
-            <span className="text-sm font-sans">What&apos;s this pattern?</span>
-          </>
+      {/* ===== FIRST FOLD — full screen ===== */}
+      <div className="relative h-screen w-full overflow-hidden">
+        {/* Matrix */}
+        {words.length > 0 && (
+          <MatrixVisualization
+            words={words} wordMap={wordMap} showSingleMatches={showSingleMatches}
+            opacity={exploreMode ? 1 : dimmed ? 0.08 : 0.35}
+            restartKey={restartKey} backgroundColor={theme.backgroundRgb}
+            onCellHover={exploreMode ? setHoveredCell : undefined}
+            exploreSettings={exploreSettings}
+          />
         )}
-      </button>
 
-      {/* Explore toolbar — right side, only in explore mode */}
-      <ExploreToolbar
-        active={exploreMode}
-        settings={exploreSettings}
-        onChange={setExploreSettings}
-        onRestart={handleRestart}
-        toolbarColor={theme.toolbar}
-        currentTrack={currentTrack}
-        isPlaying={isPlaying}
-        isMuted={isMuted}
-        currentTime={currentTime}
-        onTogglePlayPause={togglePlayPause}
-        onPlayNext={playNext}
-        onPlayPrevious={playPrevious}
-        onToggleMute={toggleMute}
-      />
+        {/* Hero Text Overlay */}
+        <div className={`transition-opacity duration-500 ${exploreMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+          <HeroOverlay accentColor={theme.accent} toolbarColor={theme.toolbar} />
+        </div>
 
-      {/* Floating Pill Controls — hidden in explore mode */}
-      <div className={`transition-opacity duration-500 ${exploreMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-        <FloatingPill
-          currentTrack={currentTrack}
-          tracks={tracks}
-          loading={loading}
-          error={error}
-          isPlaying={isPlaying}
-          currentTime={currentTime}
-          onPlayTrack={playTrack}
-          onTogglePlayPause={togglePlayPause}
-          onPlayNext={playNext}
-          onPlayPrevious={playPrevious}
-          isMuted={isMuted}
-          onToggleMute={toggleMute}
-          onRestart={handleRestart}
-          dimmed={dimmed}
-          onToggleDimmed={() => setDimmed((d) => !d)}
-          toolbarColor={theme.toolbar}
+        {/* Desktop: Social links — top left */}
+        <div className={`hidden md:flex fixed top-7 left-8 z-50 items-center gap-5 transition-opacity duration-500 ${exploreMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+          <a href="https://www.instagram.com/joyingntravelling/" target="_blank" rel="noopener noreferrer" className="text-sm font-sans text-white/40 hover:text-white transition-colors">Instagram</a>
+          <a href="https://www.threads.com/@joydeep.roni" target="_blank" rel="noopener noreferrer" className="text-sm font-sans text-white/40 hover:text-white transition-colors">Threads</a>
+          <a href="https://www.linkedin.com/in/joydeeproni/" target="_blank" rel="noopener noreferrer" className="text-sm font-sans text-white/40 hover:text-white transition-colors">LinkedIn</a>
+        </div>
+
+        {/* Mobile: Menu button + overlay */}
+        <div className={`transition-opacity duration-500 ${exploreMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+          <MobileMenu onExplore={enterExplore} toolbarColor={theme.toolbar} />
+        </div>
+
+        {/* Hovered word tooltip */}
+        {hoveredWord && (
+          <div className="fixed top-6 left-1/2 -translate-x-1/2 z-40 px-4 py-2">
+            <span className="text-white font-mono font-semibold">{hoveredWord}</span>
+            <span className="text-white/40 text-sm ml-2">{wordMap.get(hoveredWord)?.length || 0} matches</span>
+          </div>
+        )}
+
+        {/* Pattern guide */}
+        <PatternGuide active={exploreMode} restartKey={restartKey} />
+
+        {/* Desktop: "What's this pattern?" — top right */}
+        <button
+          onClick={() => { if (exploreMode) exitExplore(); else enterExplore(); }}
+          className={`hidden md:flex fixed top-6 right-6 z-50 items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${exploreMode ? 'text-white' : 'text-white/50 hover:text-white'}`}
+        >
+          {exploreMode ? (<><X className="w-4 h-4" /><span className="text-sm font-sans">Back</span></>) : (<><HelpCircle className="w-4 h-4" /><span className="text-sm font-sans">What&apos;s this pattern?</span></>)}
+        </button>
+
+        {/* Mobile: Back button in explore mode */}
+        {exploreMode && (
+          <button onClick={exitExplore} className="fixed top-6 right-6 z-50 md:hidden text-white text-xs font-mono uppercase tracking-widest">
+            BACK
+          </button>
+        )}
+
+        {/* Explore toolbar */}
+        <ExploreToolbar
+          active={exploreMode} settings={exploreSettings} onChange={setExploreSettings}
+          onRestart={handleRestart} toolbarColor={theme.toolbar}
+          currentTrack={currentTrack} isPlaying={isPlaying} isMuted={isMuted} currentTime={currentTime}
+          onTogglePlayPause={togglePlayPause} onPlayNext={playNext} onPlayPrevious={playPrevious} onToggleMute={toggleMute}
         />
+
+        {/* Floating Pill */}
+        <div className={`transition-opacity duration-500 ${exploreMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+          <FloatingPill
+            currentTrack={currentTrack} tracks={tracks} loading={loading} error={error}
+            isPlaying={isPlaying} currentTime={currentTime}
+            onPlayTrack={playTrack} onTogglePlayPause={togglePlayPause}
+            onPlayNext={playNext} onPlayPrevious={playPrevious}
+            isMuted={isMuted} onToggleMute={toggleMute} onRestart={handleRestart}
+            dimmed={dimmed} onToggleDimmed={() => setDimmed((d) => !d)} toolbarColor={theme.toolbar}
+          />
+        </div>
+      </div>
+
+      {/* ===== BELOW FOLD — mobile only, scrollable, hidden in explore ===== */}
+      <div className={`md:hidden relative z-20 px-6 py-16 flex flex-col gap-10 ${exploreMode ? 'hidden' : ''}`} style={{ backgroundColor: theme.background }}>
+        <ScrollReveal>
+          <p className="text-base font-sans text-white/60 leading-relaxed">
+            A dry, observant, tool-pilled in a practical way, and just self-aware enough to admit he&apos;s become the sort of product designer who tells people what&apos;s wrong with their apps on dinner party.
+          </p>
+        </ScrollReveal>
+
+        <ScrollReveal delay={150}>
+          <span className="text-base font-sans text-white/60 leading-relaxed block">
+            This site is perpetually half-built — no case studies, no past-work gallery, mostly because things are moving faster than any of us can keep up with, and he&apos;s made peace with being the sort of designer who&apos;s always a quarter behind her own work. Some of it lives <WorkLink /> and some experiments are <ExperimentsLink />.
+          </span>
+        </ScrollReveal>
+
+        {/* Footer */}
+        <ScrollReveal delay={300}>
+          <footer className="pt-10 pb-6 text-center" style={{ textWrap: 'balance' } as React.CSSProperties}>
+            <p className="text-sm font-sans text-white/30 leading-relaxed">
+              Folio of Joy is always work in progress because learning and building never stops.
+            </p>
+            <p className="text-sm font-sans text-white/20 mt-2">
+              Joydeep Sengupta &copy; 2077. K&oslash;benhavn, Danmark.
+            </p>
+          </footer>
+        </ScrollReveal>
+      </div>
+
+      {/* ===== DESKTOP FOOTER — at bottom of viewport ===== */}
+      <div className="hidden md:block fixed bottom-0 left-0 right-0 z-10 pointer-events-none pb-3">
+        {/* intentionally empty on desktop — text is in the hero overlay */}
       </div>
     </div>
   );

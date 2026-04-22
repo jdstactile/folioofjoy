@@ -1,7 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import {
-  Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, RefreshCw,
+  Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, RefreshCw, Settings,
 } from 'lucide-react';
 import type { WaveFunction, ColorMode, ShapeMode, ExploreSettings } from './matrix-visualization';
 import type { Track } from '@/lib/music';
@@ -91,6 +92,7 @@ export function ExploreToolbar({
   onToggleMute,
 }: ExploreToolbarProps) {
   const bg = toolbarColor || 'rgba(10, 10, 14, 0.9)';
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const set = (patch: Partial<ExploreSettings>) => {
     onChange({ ...settings, ...patch });
@@ -102,17 +104,8 @@ export function ExploreToolbar({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  return (
-    <div
-      className={`fixed right-6 z-50 backdrop-blur-xl border border-white/10 rounded-2xl px-4 py-4 shadow-2xl flex flex-col gap-4 w-44 max-h-[80vh] overflow-y-auto transition-all duration-500 ease-out ${
-        active ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-      }`}
-      style={{
-        backgroundColor: bg,
-        top: '50%',
-        transform: `translateY(-50%) translateX(${active ? '0' : '2rem'})`,
-      }}
-    >
+  const toolbarContent = (
+    <>
       {/* Now playing */}
       <div className="flex flex-col gap-2">
         <span className="text-[10px] font-mono text-white/30 uppercase tracking-wider">Now Playing</span>
@@ -182,6 +175,48 @@ export function ExploreToolbar({
         value={settings.shapeMode}
         onSelect={(v) => { set({ shapeMode: v as ShapeMode }); onRestart(); }}
       />
-    </div>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop toolbar — right side */}
+      <div
+        className={`hidden md:flex fixed right-6 z-50 backdrop-blur-xl border border-white/10 rounded-2xl px-4 py-4 shadow-2xl flex-col gap-4 w-44 max-h-[80vh] overflow-y-auto transition-all duration-500 ease-out ${
+          active ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        style={{
+          backgroundColor: bg,
+          top: '50%',
+          transform: `translateY(-50%) translateX(${active ? '0' : '2rem'})`,
+        }}
+      >
+        {toolbarContent}
+      </div>
+
+      {/* Mobile: collapsible button + panel */}
+      {active && (
+        <div className="md:hidden fixed bottom-16 right-4 z-50">
+          {/* Expanded panel */}
+          <div
+            className={`absolute bottom-full right-0 mb-2 w-48 backdrop-blur-xl border border-white/10 rounded-2xl px-4 py-4 shadow-2xl flex flex-col gap-4 max-h-[60vh] overflow-y-auto transition-all duration-500 ease-out ${
+              mobileOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-4 pointer-events-none'
+            }`}
+            style={{ backgroundColor: bg }}
+          >
+            {toolbarContent}
+          </div>
+
+          {/* Toggle button */}
+          <button
+            onClick={() => setMobileOpen((o) => !o)}
+            className="p-3 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl transition-all duration-300"
+            style={{ backgroundColor: bg }}
+          >
+            <Settings className={`w-5 h-5 text-white/70 transition-transform duration-500 ${mobileOpen ? 'rotate-90' : ''}`} />
+          </button>
+        </div>
+      )}
+    </>
   );
 }

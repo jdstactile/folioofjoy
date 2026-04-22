@@ -82,7 +82,7 @@ export function FloatingPill({
   const toolbarBg = toolbarColor || 'rgba(15, 15, 18, 0.9)';
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-6 z-50">
       {/* Song Queue Panel */}
       <div
         className={`absolute bottom-full right-0 mb-3 w-72 transition-all duration-300 ease-out ${

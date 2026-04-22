@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { WorkLink } from './work-preview';
+import { ExperimentsLink } from './experiments-preview';
 
 interface HeroOverlayProps {
   accentColor: string;
@@ -73,7 +74,7 @@ const GREETINGS = [
 const HERO_LINES = ['th1s i5', 'j0y', 'pr0duct', 'd3signer'];
 
 export function HeroOverlay({ accentColor, toolbarColor }: HeroOverlayProps) {
-  const [greeting] = useState(() => GREETINGS[Math.floor(Math.random() * GREETINGS.length)]);
+  const [greeting, setGreeting] = useState(GREETINGS[0]);
   const lineRefs = useRef<(HTMLParagraphElement | null)[]>([]);
   const hasAnimated = useRef(false);
 
@@ -81,13 +82,16 @@ export function HeroOverlay({ accentColor, toolbarColor }: HeroOverlayProps) {
     if (hasAnimated.current) return;
     hasAnimated.current = true;
 
-    const allLines = [greeting, ...HERO_LINES];
+    const picked = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
+    setGreeting(picked);
+
+    const allLines = [picked, ...HERO_LINES];
     lineRefs.current.forEach((el, i) => {
       if (el) {
         scrambleReveal(el, allLines[i], 1.2, i * 0.3);
       }
     });
-  }, [greeting]);
+  }, []);
 
   return (
     <div className="fixed inset-0 z-10 pointer-events-none flex flex-col">
@@ -123,7 +127,8 @@ export function HeroOverlay({ accentColor, toolbarColor }: HeroOverlayProps) {
               <p
                 key={i}
                 ref={(el) => { lineRefs.current[i] = el; }}
-                className="text-5xl md:text-7xl lg:text-8xl font-light tracking-wide"
+                className="text-3xl md:text-7xl lg:text-8xl font-light tracking-wide"
+                suppressHydrationWarning
               >
                 {line}
               </p>
@@ -132,14 +137,21 @@ export function HeroOverlay({ accentColor, toolbarColor }: HeroOverlayProps) {
         </div>
       </div>
 
-      {/* Bottom Text */}
-      <div className="px-8 pb-10 flex gap-12 max-w-4xl pointer-events-auto">
+      {/* Bottom Text — hidden on mobile (shown below fold instead) */}
+      <div className="hidden md:flex px-8 pb-4 gap-12 max-w-4xl pointer-events-auto">
         <p className="text-base font-sans text-white/60 leading-relaxed">
           A dry, observant, tool-pilled in a practical way, and just self-aware enough to admit he&apos;s become the sort of product designer who tells people what&apos;s wrong with their apps on dinner party.
         </p>
         <span className="text-base font-sans text-white/60 leading-relaxed block">
-          This site is perpetually half-built — no case studies, no past-work gallery, mostly because things are moving faster than any of us can keep up with, and he&apos;s made peace with being the sort of designer who&apos;s always a quarter behind her own work. Some of it lives <WorkLink />.
+          This site is perpetually half-built — no case studies, no past-work gallery, mostly because things are moving faster than any of us can keep up with, and he&apos;s made peace with being the sort of designer who&apos;s always a quarter behind her own work. Some of it lives <WorkLink /> and some experiments are <ExperimentsLink />.
         </span>
+      </div>
+
+      {/* Footer — desktop */}
+      <div className="hidden md:block px-8 pb-6 text-center pointer-events-none" style={{ textWrap: 'balance' } as React.CSSProperties}>
+        <p className="text-xs font-sans text-white/20 leading-relaxed">
+          Folio of Joy is always work in progress because learning and building never stops. Joydeep Sengupta &copy; 2077. K&oslash;benhavn, Danmark.
+        </p>
       </div>
     </div>
   );
