@@ -4,7 +4,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Folio of Joy — Product Designer',
-  description: 'The perpetually half-built portfolio of Joy, a product designer who turns song lyrics into visual repetition patterns, ships interfaces for Netflix, Verizon, and startups, and is always a quarter behind her own work.',
+  description: 'I\'m a product designer who started in computer science, then did the obvious late-2010s thing and developed opinions about interfaces, user psychology, and whether a button should feel expensive. I like polish, intentionality, and tools that actually move the craft forward instead of becoming another shrine we all pretend to worship.',
   icons: {
     icon: [
       {
