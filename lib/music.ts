@@ -11,9 +11,11 @@ export interface Track {
   preview_url: string | null;
 }
 
-export async function getPopularTracks(): Promise<Track[]> {
+export type PlaylistType = 'favorites' | 'top50';
+
+export async function getTracks(playlist: PlaylistType = 'favorites'): Promise<Track[]> {
   try {
-    const response = await fetch('/api/music/tracks');
+    const response = await fetch(`/api/music/tracks?playlist=${playlist}`);
 
     if (!response.ok) {
       console.warn('Failed to fetch tracks from API');

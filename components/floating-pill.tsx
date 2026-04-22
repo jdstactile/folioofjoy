@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  ChevronRight,
   Play,
   Pause,
   SkipBack,
@@ -11,9 +10,8 @@ import {
   Volume2,
   VolumeX,
   RefreshCw,
-  HelpCircle,
   Accessibility,
-  X,
+  Music,
 } from 'lucide-react';
 import type { Track } from '@/lib/music';
 
@@ -33,6 +31,7 @@ interface FloatingPillProps {
   onRestart: () => void;
   dimmed: boolean;
   onToggleDimmed: () => void;
+  toolbarColor?: string;
 }
 
 export function FloatingPill({
@@ -51,9 +50,28 @@ export function FloatingPill({
   onRestart,
   dimmed,
   onToggleDimmed,
+  toolbarColor,
 }: FloatingPillProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [showHelp, setShowHelp] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [showUnmuteTip, setShowUnmuteTip] = useState(true);
+  const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const resetInactivityTimer = useCallback(() => {
+    if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+    inactivityTimer.current = setTimeout(() => {
+      if (!isOpen) setExpanded(false);
+    }, 15000);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (expanded) {
+      resetInactivityTimer();
+    }
+    return () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+    };
+  }, [expanded, resetInactivityTimer]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -61,53 +79,49 @@ export function FloatingPill({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const toolbarBg = toolbarColor || 'rgba(15, 15, 18, 0.9)';
+
   return (
-    <div className="fixed right-6 top-1/2 -translate-y-1/2 z-50 flex items-center gap-3">
+    <div className="fixed bottom-6 right-6 z-50">
       {/* Song Queue Panel */}
       <div
-        className={`absolute right-full top-1/2 -translate-y-1/2 mr-3 w-72 transition-all duration-300 ease-out ${
-          isOpen && !showHelp
-            ? 'opacity-100 translate-x-0 pointer-events-auto'
-            : 'opacity-0 translate-x-4 pointer-events-none'
+        className={`absolute bottom-full right-0 mb-3 w-72 transition-all duration-300 ease-out ${
+          isOpen
+            ? 'opacity-100 translate-y-0 pointer-events-auto'
+            : 'opacity-0 translate-y-4 pointer-events-none'
         }`}
       >
-        <div className="bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl p-4 shadow-2xl max-h-[70vh] overflow-y-auto">
+        <div
+          className="backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-2xl max-h-[60vh] overflow-y-auto transition-colors duration-1000 ease-in-out"
+          style={{ backgroundColor: toolbarBg }}
+        >
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-muted-foreground">
-              Song Queue
-            </span>
-            <span className="text-xs text-muted-foreground font-mono">
-              {tracks.length} tracks
-            </span>
+            <span className="text-sm font-medium text-white/50">Song Queue</span>
+            <span className="text-xs text-white/40 font-mono">{tracks.length} tracks</span>
           </div>
 
           {error && (
-            <div className="text-sm text-destructive mb-3 p-2 bg-destructive/10 rounded">
-              {error}
-            </div>
+            <div className="text-sm text-red-400 mb-3 p-2 bg-red-500/10 rounded">{error}</div>
           )}
 
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader className="w-5 h-5 animate-spin text-primary" />
+              <Loader className="w-5 h-5 animate-spin text-white/50" />
             </div>
           ) : (
             <div className="space-y-1">
               {tracks.map((track) => (
                 <button
                   key={track.id}
-                  onClick={() => {
-                    onPlayTrack(track);
-                    setIsOpen(false);
-                  }}
+                  onClick={() => { onPlayTrack(track); setIsOpen(false); }}
                   className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
                     currentTrack?.id === track.id
-                      ? 'bg-primary/30 text-primary border border-primary/50'
-                      : 'hover:bg-secondary/50 text-foreground'
+                      ? 'bg-white/15 text-white border border-white/20'
+                      : 'hover:bg-white/5 text-white/70'
                   }`}
                 >
                   <div className="font-medium truncate">{track.name}</div>
-                  <div className="text-xs text-muted-foreground truncate">
+                  <div className="text-xs text-white/40 truncate">
                     {track.artists.map((a) => a.name).join(', ')}
                   </div>
                 </button>
@@ -117,163 +131,97 @@ export function FloatingPill({
         </div>
       </div>
 
-      {/* Help Panel */}
+      {/* Toolbar Pill — collapsible, expands on hover */}
       <div
-        className={`absolute right-full top-1/2 -translate-y-1/2 mr-3 w-80 transition-all duration-300 ease-out ${
-          showHelp
-            ? 'opacity-100 translate-x-0 pointer-events-auto'
-            : 'opacity-0 translate-x-4 pointer-events-none'
-        }`}
+        className="group relative"
+        onMouseEnter={() => { setExpanded(true); resetInactivityTimer(); }}
+        onMouseLeave={() => { if (!isOpen) setExpanded(false); }}
+        onMouseMove={() => { if (expanded) resetInactivityTimer(); }}
       >
-        <div className="bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl p-5 shadow-2xl">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-semibold text-foreground">
-              What&apos;s This Pattern?
-            </span>
+        <div
+          className="backdrop-blur-xl border border-white/10 rounded-full shadow-2xl flex items-center overflow-hidden"
+          style={{ backgroundColor: toolbarBg, transition: 'all 700ms cubic-bezier(0.16, 1, 0.3, 1)' }}
+        >
+          {/* Collapsed: just album art + music icon */}
+          <div className={`flex items-center px-2 py-2 ${expanded ? 'gap-1' : 'gap-0'}`} style={{ transition: 'all 700ms cubic-bezier(0.16, 1, 0.3, 1)' }}>
+            {/* Album art / queue toggle — always visible */}
             <button
-              onClick={() => setShowHelp(false)}
-              className="p-1 hover:bg-secondary rounded-full transition-all"
+              onClick={() => { setIsOpen(!isOpen); }}
+              className={`flex items-center gap-2 p-1.5 rounded-full transition-all flex-shrink-0 ${
+                isOpen ? 'bg-white/15 text-white' : 'hover:bg-white/10'
+              }`}
+              title={currentTrack ? `${currentTrack.name} — ${currentTrack.artists[0]?.name}` : 'Song queue'}
             >
-              <X className="w-4 h-4 text-muted-foreground" />
+              {currentTrack?.album?.images[0]?.url ? (
+                <img
+                  src={currentTrack.album.images[0].url}
+                  alt="Album art"
+                  className="w-8 h-8 rounded-lg object-cover"
+                />
+              ) : (
+                <Music className="w-5 h-5 text-white/60" />
+              )}
             </button>
-          </div>
-          <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
-            <p>
-              This is a <span className="text-foreground font-medium">song repetition matrix</span>. It takes the lyrics of a song and plots every word against every other word in a grid.
-            </p>
-            <p>
-              When two words in the lyrics are the <span className="text-foreground font-medium">same</span>, a shape lights up at that spot. The more a word repeats, the more shapes appear.
-            </p>
-            <p>
-              Different words get different shapes &mdash; <span className="text-foreground font-medium">squares</span>, <span className="text-foreground font-medium">circles</span>, and <span className="text-foreground font-medium">triangles</span> &mdash; so you can see which words repeat the most.
-            </p>
-            <p>
-              The pattern spreads from the center outward. Songs with lots of repetition (like choruses) create beautiful symmetric patterns.
-            </p>
-            <p className="text-xs pt-2 border-t border-border/50">
-              Inspired by <a href="https://github.com/colinmorris/SongSim" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2 hover:text-primary/80">SongSim</a> by Colin Morris.
-            </p>
+
+            {/* Expanded controls — only when hovered */}
+            <div className={`flex items-center gap-1 ${expanded ? 'max-w-[500px] opacity-100' : 'max-w-0 opacity-0'} overflow-hidden`} style={{ transition: 'all 700ms cubic-bezier(0.16, 1, 0.3, 1)' }}>
+              {/* Track info */}
+              <div className="flex flex-col text-left px-1 min-w-0">
+                <span className="text-xs font-medium text-white truncate max-w-[100px] leading-tight">
+                  {currentTrack?.name || 'No track'}
+                </span>
+                <span className="text-[10px] text-white/40 truncate max-w-[100px]">
+                  {currentTrack?.artists[0]?.name || ''}
+                </span>
+              </div>
+
+              <div className="w-px h-6 bg-white/10 flex-shrink-0" />
+
+              {/* Playback */}
+              <button onClick={onPlayPrevious} className="p-1.5 hover:bg-white/10 rounded-full transition-all flex-shrink-0" title="Previous">
+                <SkipBack className="w-3.5 h-3.5 text-white/70" />
+              </button>
+              <button onClick={onTogglePlayPause} className="p-1.5 bg-white/15 hover:bg-white/20 text-white rounded-full transition-all flex-shrink-0" title={isPlaying ? 'Pause' : 'Play'}>
+                {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+              </button>
+              <button onClick={onPlayNext} className="p-1.5 hover:bg-white/10 rounded-full transition-all flex-shrink-0" title="Next">
+                <SkipForward className="w-3.5 h-3.5 text-white/70" />
+              </button>
+
+              {/* Mute */}
+              <span className="relative flex-shrink-0">
+                <button onClick={() => { onToggleMute(); setShowUnmuteTip(false); }} className={`p-1.5 rounded-full transition-all ${isMuted ? 'text-white/40 hover:bg-white/10' : 'bg-white/15 text-white'}`} title={isMuted ? 'Unmute' : 'Mute'}>
+                  {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                </button>
+                {showUnmuteTip && isMuted && expanded && (
+                  <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap px-3 py-1.5 rounded-lg bg-white text-black text-xs font-sans shadow-lg animate-bounce-subtle">
+                    Unmute to hear the song with pattern
+                    <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-white" />
+                  </span>
+                )}
+              </span>
+
+              {/* Time */}
+              <div className="text-[10px] font-mono text-white/40 px-1 flex-shrink-0">
+                {formatTime(currentTime)}
+              </div>
+
+              <div className="w-px h-6 bg-white/10 flex-shrink-0" />
+
+              {/* Restart */}
+              <button onClick={onRestart} className="p-1.5 hover:bg-white/10 rounded-full transition-all flex-shrink-0" title="Restart pattern">
+                <RefreshCw className="w-3.5 h-3.5 text-white/70" />
+              </button>
+
+              {/* Accessibility */}
+              <button onClick={onToggleDimmed} className={`p-1.5 rounded-full transition-all flex-shrink-0 ${dimmed ? 'bg-white/15 text-white' : 'hover:bg-white/10 text-white/70'}`} title={dimmed ? 'Full brightness' : 'Dim pattern'}>
+                <Accessibility className="w-3.5 h-3.5" />
+              </button>
+
+
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Vertical Toolbar */}
-      <div className="bg-card/90 backdrop-blur-xl border border-border/50 rounded-full px-2 py-2 shadow-2xl flex flex-col items-center gap-1">
-        {/* Album Art & Song Info */}
-        <button
-          onClick={() => { setIsOpen(!isOpen); setShowHelp(false); }}
-          className={`flex flex-col items-center gap-1 p-2 rounded-full transition-all ${
-            isOpen ? 'bg-primary/20 text-primary' : 'hover:bg-secondary'
-          }`}
-          title={currentTrack ? `${currentTrack.name} — ${currentTrack.artists[0]?.name}` : 'No track'}
-        >
-          {currentTrack?.album?.images[0]?.url ? (
-            <img
-              src={currentTrack.album.images[0].url}
-              alt="Album art"
-              className="w-8 h-8 rounded-lg object-cover"
-            />
-          ) : (
-            <div className="w-8 h-8 rounded-lg bg-secondary" />
-          )}
-          <ChevronRight
-            className={`w-3 h-3 transition-transform flex-shrink-0 ${
-              isOpen ? 'rotate-180' : ''
-            }`}
-          />
-        </button>
-
-        {/* Divider */}
-        <div className="h-px w-6 bg-border/50" />
-
-        {/* Playback Controls */}
-        <button
-          onClick={onPlayPrevious}
-          className="p-2 hover:bg-secondary rounded-full transition-all"
-          title="Previous track"
-        >
-          <SkipBack className="w-4 h-4" />
-        </button>
-
-        <button
-          onClick={onTogglePlayPause}
-          className="p-2 bg-primary/20 hover:bg-primary/30 text-primary rounded-full transition-all"
-          title={isPlaying ? 'Pause' : 'Play'}
-        >
-          {isPlaying ? (
-            <Pause className="w-4 h-4" />
-          ) : (
-            <Play className="w-4 h-4" />
-          )}
-        </button>
-
-        <button
-          onClick={onPlayNext}
-          className="p-2 hover:bg-secondary rounded-full transition-all"
-          title="Next track"
-        >
-          <SkipForward className="w-4 h-4" />
-        </button>
-
-        {/* Mute Toggle */}
-        <button
-          onClick={onToggleMute}
-          className={`p-2 rounded-full transition-all ${
-            isMuted
-              ? 'text-muted-foreground hover:bg-secondary'
-              : 'bg-primary/20 text-primary hover:bg-primary/30'
-          }`}
-          title={isMuted ? 'Unmute' : 'Mute'}
-        >
-          {isMuted ? (
-            <VolumeX className="w-4 h-4" />
-          ) : (
-            <Volume2 className="w-4 h-4" />
-          )}
-        </button>
-
-        {/* Time Display */}
-        <div className="text-[10px] font-mono text-muted-foreground px-1">
-          {formatTime(currentTime)}
-        </div>
-
-        {/* Divider */}
-        <div className="h-px w-6 bg-border/50" />
-
-        {/* Restart Pattern */}
-        <button
-          onClick={onRestart}
-          className="p-2 hover:bg-secondary rounded-full transition-all"
-          title="Restart pattern"
-        >
-          <RefreshCw className="w-4 h-4" />
-        </button>
-
-        {/* Accessibility — dim pattern */}
-        <button
-          onClick={onToggleDimmed}
-          className={`p-2 rounded-full transition-all ${
-            dimmed
-              ? 'bg-primary/20 text-primary'
-              : 'hover:bg-secondary text-foreground'
-          }`}
-          title={dimmed ? 'Full brightness' : 'Dim pattern for readability'}
-        >
-          <Accessibility className="w-4 h-4" />
-        </button>
-
-        {/* What's This Pattern? */}
-        <button
-          onClick={() => { setShowHelp(!showHelp); setIsOpen(false); }}
-          className={`p-2 rounded-full transition-all ${
-            showHelp
-              ? 'bg-primary/20 text-primary'
-              : 'hover:bg-secondary text-foreground'
-          }`}
-          title="What's this pattern?"
-        >
-          <HelpCircle className="w-4 h-4" />
-        </button>
       </div>
     </div>
   );

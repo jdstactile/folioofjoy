@@ -1,6 +1,31 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
+@font-face {
+  font-family: 'Praktikal';
+  src: url('/fonts/APK-Praktikal-Light.otf') format('opentype');
+  font-weight: 300;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Praktikal';
+  src: url('/fonts/APK-Praktikal-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Galeria';
+  src: url('/fonts/APK-Galeria-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Galeria';
+  src: url('/fonts/APK-Galeria-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -41,8 +66,10 @@
 }
 
 @theme inline {
-  --font-sans: 'Geist', 'Geist Fallback';
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --font-sans: 'Galeria', sans-serif;
+  --font-mono: 'Praktikal', monospace;
+  --font-heading: 'Praktikal', sans-serif;
+  --font-body: 'Galeria', sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -87,5 +114,40 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% { transform: translate(-50%, 0); }
+  50% { transform: translate(-50%, -3px); }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s ease-in-out infinite;
+}
+
+@keyframes caption-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-caption-fade {
+  animation: caption-fade 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes particle-burst {
+  0% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translate(var(--px), var(--py)) scale(0.2);
   }
 }
