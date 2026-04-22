@@ -3,9 +3,8 @@ import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'SongSim - Song Repetition Matrix',
-  description: 'Visualize lyrical repetition patterns with self-similarity matrices',
-  generator: 'v0.app',
+  title: 'Folio of Joy — Product Designer',
+  description: 'The perpetually half-built portfolio of Joy, a product designer who turns song lyrics into visual repetition patterns, ships interfaces for Netflix, Verizon, and startups, and is always a quarter behind her own work.',
   icons: {
     icon: [
       {
