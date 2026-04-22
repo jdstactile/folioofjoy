@@ -138,13 +138,15 @@ export function HeroOverlay({ accentColor, toolbarColor }: HeroOverlayProps) {
       </div>
 
       {/* Bottom Text — hidden on mobile (shown below fold instead) */}
-      <div className="hidden md:flex px-8 pb-4 gap-12 max-w-4xl pointer-events-auto">
-        <p className="text-base font-sans text-white/60 leading-relaxed">
-          A dry, observant, tool-pilled in a practical way, and just self-aware enough to admit he&apos;s become the sort of product designer who tells people what&apos;s wrong with their apps on dinner party.
-        </p>
-        <span className="text-base font-sans text-white/60 leading-relaxed block">
-          This site is perpetually half-built — no case studies, no past-work gallery, mostly because things are moving faster than any of us can keep up with, and he&apos;s made peace with being the sort of designer who&apos;s always a quarter behind her own work. Some of it lives <WorkLink /> and some experiments are <ExperimentsLink />.
-        </span>
+      <div className="hidden md:flex justify-center px-8 pb-4 pointer-events-auto">
+        <div className="flex gap-12 max-w-4xl">
+          <p className="flex-1 text-base font-sans text-white/60 leading-relaxed" style={{ textWrap: 'balance' } as React.CSSProperties}>
+            A dry, observant, tool-pilled in a practical way, and just self-aware enough to admit he&apos;s become the sort of product designer who tells people what&apos;s wrong with their apps on dinner party.
+          </p>
+          <span className="flex-1 text-base font-sans text-white/60 leading-relaxed block" style={{ textWrap: 'balance' } as React.CSSProperties}>
+            This site is perpetually half-built — no case studies, no past-work gallery, mostly because things are moving faster than any of us can keep up with, and he&apos;s made peace with being the sort of designer who&apos;s always a quarter behind her own work. Some of it lives <WorkLink /> and some experiments are <ExperimentsLink />.
+          </span>
+        </div>
       </div>
 
       {/* Footer — desktop */}

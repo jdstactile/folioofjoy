@@ -55,7 +55,25 @@ export function FloatingPill({
   const [isOpen, setIsOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [showUnmuteTip, setShowUnmuteTip] = useState(true);
+  const [nowPlayingToast, setNowPlayingToast] = useState<string | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevTrackId = useRef<string | null>(null);
   const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Show "Now Playing" toast when track changes
+  useEffect(() => {
+    if (!currentTrack) return;
+    if (prevTrackId.current && prevTrackId.current !== currentTrack.id) {
+      setNowPlayingToast(currentTrack.name);
+      setExpanded(true);
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+      toastTimer.current = setTimeout(() => {
+        setNowPlayingToast(null);
+        setExpanded(false);
+      }, 3000);
+    }
+    prevTrackId.current = currentTrack.id;
+  }, [currentTrack]);
 
   const resetInactivityTimer = useCallback(() => {
     if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
@@ -83,6 +101,17 @@ export function FloatingPill({
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-6 z-50">
+      {/* Now Playing toast */}
+      <div
+        className={`absolute bottom-full left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-0 mb-2 whitespace-nowrap px-4 py-2 rounded-full backdrop-blur-xl border border-white/10 transition-all duration-500 ease-out ${
+          nowPlayingToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
+        }`}
+        style={{ backgroundColor: toolbarBg }}
+      >
+        <span className="text-xs font-mono text-white/40 uppercase tracking-wider mr-2">Now Playing</span>
+        <span className="text-xs font-sans text-white">{nowPlayingToast}</span>
+      </div>
+
       {/* Song Queue Panel */}
       <div
         className={`absolute bottom-full right-0 mb-3 w-72 transition-all duration-300 ease-out ${
