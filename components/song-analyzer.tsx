@@ -11,6 +11,7 @@ import { MobileMenu } from './mobile-menu';
 import { ScrollReveal } from './scroll-reveal';
 import { WorkLink } from './work-preview';
 import { ExperimentsLink } from './experiments-preview';
+import { AudioGate } from './audio-gate';
 import { getTracks, searchTrackLyrics, type Track, type PlaylistType } from '@/lib/music';
 import { extractDominantColor, DEFAULT_THEME, type ThemeColors } from '@/lib/color';
 
@@ -21,6 +22,7 @@ export function SongAnalyzer() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showSingleMatches, setShowSingleMatches] = useState(true);
+  const [gateOpen, setGateOpen] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
@@ -89,6 +91,19 @@ export function SongAnalyzer() {
     return () => { audio.removeEventListener('timeupdate', handleTimeUpdate); audio.removeEventListener('ended', handleEnded); };
   }, [tracks, currentTrack]);
 
+  const handleGateChoice = useCallback((muted: boolean) => {
+    setIsMuted(muted);
+    setGateOpen(false);
+    // Auto-start playback after gate
+    if (audioRef.current) {
+      audioRef.current.muted = muted;
+    }
+    if (currentTrack?.preview_url && audioRef.current) {
+      audioRef.current.src = currentTrack.preview_url;
+      audioRef.current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+    }
+  }, [currentTrack]);
+
   const playTrack = async (track: Track) => {
     setCurrentTrack(track); setCurrentTime(0);
     if (audioRef.current && track.preview_url) {
@@ -141,6 +156,15 @@ export function SongAnalyzer() {
     if (word && (showSingleMatches || (wordMap.get(word)?.length || 0) > 1)) return word;
     return null;
   }, [exploreMode, hoveredCell, words, wordMap, showSingleMatches]);
+
+  if (gateOpen) {
+    return (
+      <>
+        <audio ref={audioRef} crossOrigin="anonymous" muted={isMuted} />
+        <AudioGate onChoice={handleGateChoice} />
+      </>
+    );
+  }
 
   return (
     <div className={`relative w-full transition-colors duration-1000 ease-in-out${exploreMode ? ' h-screen overflow-hidden' : ''}`} style={{ backgroundColor: theme.background }}>
