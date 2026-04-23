@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
 import { MobileGallery } from './mobile-gallery';
 
@@ -32,6 +33,7 @@ function useIsMobile() {
 export function ExperimentsLink() {
   const isMobile = useIsMobile();
   const [showPreview, setShowPreview] = useState(false);
+  const [particles, setParticles] = useState<Array<{ id: number; angle: number; speed: number; size: number }>>([]);
 
   // Mobile gallery
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -77,13 +79,29 @@ export function ExperimentsLink() {
     <>
       <span className="relative inline-block">
         <button
-          onMouseEnter={() => setShowPreview(true)}
+          onMouseEnter={() => {
+            setShowPreview(true);
+            const newParticles = Array.from({ length: 6 }, (_, i) => ({
+              id: Date.now() + i, angle: (Math.PI * 2 * i) / 6 + (Math.random() - 0.5) * 0.5,
+              speed: 20 + Math.random() * 30, size: 2 + Math.random() * 3,
+            }));
+            setParticles(newParticles);
+            setTimeout(() => setParticles([]), 1600);
+          }}
           onMouseLeave={() => setShowPreview(false)}
           onClick={handleClick}
           className="underline text-white/80 hover:text-white underline-offset-2 cursor-pointer"
         >
           here
         </button>
+
+        {particles.map((p) => (
+          <span key={p.id} className="absolute pointer-events-none rounded-full bg-white"
+            style={{ width: p.size, height: p.size, left: '50%', top: '50%', opacity: 0,
+              animation: 'particle-burst 1400ms ease-out forwards',
+              '--px': `${Math.cos(p.angle) * p.speed}px`, '--py': `${Math.sin(p.angle) * p.speed}px`,
+            } as React.CSSProperties} />
+        ))}
 
         <span className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-1 pointer-events-none transition-all duration-400 ease-out block ${showPreview ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-2 scale-95'}`}>
           <span className="relative block w-44 h-32">
@@ -104,9 +122,9 @@ export function ExperimentsLink() {
       <MobileGallery items={galleryItems} open={mobileOpen} onClose={() => setMobileOpen(false)} />
 
       {/* Desktop: carousel */}
-      {carouselMounted && (
+      {carouselMounted && typeof document !== 'undefined' && createPortal((
         <div className={`fixed inset-0 z-[100] flex items-center justify-center transition-opacity duration-400 ease-out ${carouselVisible ? 'opacity-100' : 'opacity-0'}`} onClick={closeCarousel}>
-          <div className={`absolute inset-0 bg-black/90 backdrop-blur-sm transition-all duration-400 ${carouselVisible ? 'opacity-100' : 'opacity-0'}`} />
+          <div className={`absolute inset-0 bg-black backdrop-blur-xl transition-all duration-400 ${carouselVisible ? 'opacity-100' : 'opacity-0'}`} />
 
           <button onClick={closeCarousel} className={`absolute top-6 left-6 z-10 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300 ${carouselVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`} style={{ transitionDelay: carouselVisible ? '200ms' : '0ms' }}>
             <X className="w-5 h-5 text-white" />
@@ -156,7 +174,7 @@ export function ExperimentsLink() {
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
     </>
   );
 }

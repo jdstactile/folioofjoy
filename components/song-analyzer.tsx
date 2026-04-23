@@ -205,9 +205,10 @@ export function SongAnalyzer() {
         {/* Explore toolbar */}
         <ExploreToolbar
           active={exploreMode} settings={exploreSettings} onChange={setExploreSettings}
-          onRestart={handleRestart} toolbarColor={theme.toolbar}
+          onRestart={handleRestart} toolbarColor={theme.toolbar} accentColor={theme.accent}
           currentTrack={currentTrack} isPlaying={isPlaying} isMuted={isMuted} currentTime={currentTime}
           onTogglePlayPause={togglePlayPause} onPlayNext={playNext} onPlayPrevious={playPrevious} onToggleMute={toggleMute}
+          lyrics={lyrics} wordMap={wordMap}
         />
 
         {/* Floating Pill */}
@@ -227,7 +228,7 @@ export function SongAnalyzer() {
       <div className={`md:hidden relative z-20 px-6 py-16 flex flex-col gap-10 ${exploreMode ? 'hidden' : ''}`} style={{ backgroundColor: theme.background }}>
         <ScrollReveal>
           <p className="text-base font-sans text-white/60 leading-relaxed">
-            A dry, observant, tool-pilled in a practical way, and just self-aware enough to admit he&apos;s become the sort of product designer who tells people what&apos;s wrong with their apps on dinner party.
+            A dry, observant, tool-pilled in a practical way, and just self-aware enough to admit he&apos;s become the sort of product designer who can tell you exactly why your app feels slightly off, why your onboarding leaks users, why your AI feature is mostly a nervous mood board and might just look like a GPT wrapper.
           </p>
         </ScrollReveal>
 
@@ -241,10 +242,11 @@ export function SongAnalyzer() {
         <ScrollReveal delay={300}>
           <footer className="pt-10 pb-6 text-center" style={{ textWrap: 'balance' } as React.CSSProperties}>
             <p className="text-sm font-sans text-white/30 leading-relaxed">
-              Folio of Joy is always work in progress because learning and building never stops.
-            </p>
-            <p className="text-sm font-sans text-white/20 mt-2">
-              Joydeep Sengupta &copy; 2077. K&oslash;benhavn, Danmark.
+              Folio of Joy is always work in progress because learning and building never stops
+              <span className="inline-block mx-3 w-1 h-1 rounded-full bg-current align-middle" />
+              Joydeep Sengupta &copy; 2077
+              <span className="inline-block mx-3 w-1 h-1 rounded-full bg-current align-middle" />
+              K&oslash;benhavn, Danmark
             </p>
           </footer>
         </ScrollReveal>

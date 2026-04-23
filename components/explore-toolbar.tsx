@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
-  Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, RefreshCw, Settings,
+  Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, RefreshCw, Settings, ChevronDown,
 } from 'lucide-react';
 import type { WaveFunction, ColorMode, ShapeMode, ExploreSettings } from './matrix-visualization';
 import type { Track } from '@/lib/music';
@@ -13,6 +13,7 @@ interface ExploreToolbarProps {
   onChange: (settings: ExploreSettings) => void;
   onRestart: () => void;
   toolbarColor?: string;
+  accentColor?: string;
   // Music controls
   currentTrack: Track | null;
   isPlaying: boolean;
@@ -22,6 +23,9 @@ interface ExploreToolbarProps {
   onPlayNext: () => void;
   onPlayPrevious: () => void;
   onToggleMute: () => void;
+  // Lyrics
+  lyrics: string;
+  wordMap: Map<string, number[]>;
 }
 
 const WAVE_OPTIONS: { value: WaveFunction; label: string }[] = [
@@ -82,6 +86,7 @@ export function ExploreToolbar({
   onChange,
   onRestart,
   toolbarColor,
+  accentColor,
   currentTrack,
   isPlaying,
   isMuted,
@@ -90,9 +95,23 @@ export function ExploreToolbar({
   onPlayNext,
   onPlayPrevious,
   onToggleMute,
+  lyrics,
+  wordMap,
 }: ExploreToolbarProps) {
   const bg = toolbarColor || 'rgba(10, 10, 14, 0.9)';
+  const accent = accentColor || '#ffffff';
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [lyricsOpen, setLyricsOpen] = useState(false);
+
+  const lyricsTokens = useMemo(() => {
+    if (!lyrics) return [] as { text: string; count: number; isWord: boolean }[];
+    return lyrics.split(/(\s+)/).map((tok) => {
+      if (/^\s+$/.test(tok) || tok === '') return { text: tok, count: 0, isWord: false };
+      const norm = tok.toLowerCase().replace(/[^\w]/g, '');
+      const count = norm ? wordMap.get(norm)?.length || 0 : 0;
+      return { text: tok, count, isWord: true };
+    });
+  }, [lyrics, wordMap]);
 
   const set = (patch: Partial<ExploreSettings>) => {
     onChange({ ...settings, ...patch });
@@ -175,6 +194,46 @@ export function ExploreToolbar({
         value={settings.shapeMode}
         onSelect={(v) => { set({ shapeMode: v as ShapeMode }); onRestart(); }}
       />
+
+      <div className="h-px bg-white/10" />
+
+      {/* Lyrics — collapsible */}
+      <div className="flex flex-col gap-1.5">
+        <button
+          onClick={() => setLyricsOpen((o) => !o)}
+          className="flex items-center justify-between text-[10px] font-mono text-white/30 hover:text-white/60 uppercase tracking-wider transition-colors"
+        >
+          <span>Lyrics</span>
+          <ChevronDown className={`w-3 h-3 transition-transform duration-300 ${lyricsOpen ? 'rotate-180' : ''}`} />
+        </button>
+        <div
+          className={`overflow-hidden transition-[max-height] duration-400 ease-out ${lyricsOpen ? 'max-h-[40vh]' : 'max-h-0'}`}
+        >
+          <div className="overflow-y-auto max-h-[40vh] pr-1 text-[11px] leading-relaxed font-sans whitespace-pre-wrap break-words">
+            {lyricsTokens.length === 0 ? (
+              <span className="text-white/30 italic">No lyrics.</span>
+            ) : (
+              lyricsTokens.map((t, i) => {
+                if (!t.isWord) return <span key={i}>{t.text}</span>;
+                const recurring = t.count > 1;
+                return (
+                  <span
+                    key={i}
+                    title={recurring ? `${t.count}×` : ''}
+                    className="transition-colors"
+                    style={{
+                      color: recurring ? accent : 'rgba(255,255,255,0.25)',
+                      fontWeight: recurring ? 500 : 400,
+                    }}
+                  >
+                    {t.text}
+                  </span>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </div>
     </>
   );
 
@@ -182,7 +241,7 @@ export function ExploreToolbar({
     <>
       {/* Desktop toolbar — right side */}
       <div
-        className={`hidden md:flex fixed right-6 z-50 backdrop-blur-xl border border-white/10 rounded-2xl px-4 py-4 shadow-2xl flex-col gap-4 w-44 max-h-[80vh] overflow-y-auto transition-all duration-500 ease-out ${
+        className={`hidden md:flex fixed right-6 z-50 backdrop-blur-xl border border-white/10 rounded-2xl px-4 py-4 shadow-2xl flex-col gap-4 w-56 max-h-[85vh] overflow-y-auto transition-all duration-500 ease-out ${
           active ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
         style={{
@@ -199,7 +258,7 @@ export function ExploreToolbar({
         <div className="md:hidden fixed bottom-16 right-4 z-50">
           {/* Expanded panel */}
           <div
-            className={`absolute bottom-full right-0 mb-2 w-48 backdrop-blur-xl border border-white/10 rounded-2xl px-4 py-4 shadow-2xl flex flex-col gap-4 max-h-[60vh] overflow-y-auto transition-all duration-500 ease-out ${
+            className={`absolute bottom-full right-0 mb-2 w-60 backdrop-blur-xl border border-white/10 rounded-2xl px-4 py-4 shadow-2xl flex flex-col gap-4 max-h-[70vh] overflow-y-auto transition-all duration-500 ease-out ${
               mobileOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-4 pointer-events-none'
             }`}
             style={{ backgroundColor: bg }}

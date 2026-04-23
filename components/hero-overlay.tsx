@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import gsap from 'gsap';
+import { scrambleReveal } from '@/lib/scramble';
 import { WorkLink } from './work-preview';
 import { ExperimentsLink } from './experiments-preview';
 
@@ -21,36 +21,6 @@ function JoyLogo({ className, style }: { className?: string; style?: React.CSSPr
       <path d="M527.406 89.959C525.855 88.9067 517.594 82.8737 502.624 71.8599C500.602 70.3201 498.652 68.8218 496.772 67.365L505.684 102.785C513.09 98.2687 520.331 93.9935 527.406 89.959Z" fill="currentColor"/>
     </svg>
   );
-}
-
-const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*!?';
-
-function scrambleReveal(el: HTMLElement, finalText: string, duration: number, delay: number) {
-  const length = finalText.length;
-  const progress = { value: 0 };
-  // Start with random chars
-  el.textContent = Array.from({ length }, () => CHARS[Math.floor(Math.random() * CHARS.length)]).join('');
-
-  gsap.to(progress, {
-    value: 1,
-    duration,
-    delay,
-    ease: 'power2.inOut',
-    onUpdate: () => {
-      const revealed = Math.floor(progress.value * length);
-      let result = '';
-      for (let i = 0; i < length; i++) {
-        if (finalText[i] === ' ') {
-          result += ' ';
-        } else if (i < revealed) {
-          result += finalText[i];
-        } else {
-          result += CHARS[Math.floor(Math.random() * CHARS.length)];
-        }
-      }
-      el.textContent = result;
-    },
-  });
 }
 
 const GREETINGS = [
@@ -141,7 +111,7 @@ export function HeroOverlay({ accentColor, toolbarColor }: HeroOverlayProps) {
       <div className="hidden md:flex justify-center px-8 pb-4 pointer-events-auto">
         <div className="flex gap-12 max-w-4xl">
           <p className="flex-1 text-base font-sans text-white/60 leading-relaxed" style={{ textWrap: 'balance' } as React.CSSProperties}>
-            A dry, observant, tool-pilled in a practical way, and just self-aware enough to admit he&apos;s become the sort of product designer who tells people what&apos;s wrong with their apps on dinner party.
+            A dry, observant, tool-pilled in a practical way, and just self-aware enough to admit he&apos;s become the sort of product designer who can tell you exactly why your app feels slightly off, why your onboarding leaks users, why your AI feature is mostly a nervous mood board and might just look like a GPT wrapper.
           </p>
           <span className="flex-1 text-base font-sans text-white/60 leading-relaxed block" style={{ textWrap: 'balance' } as React.CSSProperties}>
             This site is perpetually half-built — no case studies, no past-work gallery, mostly because things are moving faster than any of us can keep up with, and he&apos;s made peace with being the sort of designer who&apos;s always a quarter behind her own work. Some of it lives <WorkLink /> and some experiments are <ExperimentsLink />.
@@ -152,7 +122,11 @@ export function HeroOverlay({ accentColor, toolbarColor }: HeroOverlayProps) {
       {/* Footer — desktop */}
       <div className="hidden md:block px-8 pb-6 text-center pointer-events-none" style={{ textWrap: 'balance' } as React.CSSProperties}>
         <p className="text-xs font-sans text-white/20 leading-relaxed">
-          Folio of Joy is always work in progress because learning and building never stops. Joydeep Sengupta &copy; 2077. K&oslash;benhavn, Danmark.
+          Folio of Joy is always work in progress because learning and building never stops
+          <span className="inline-block mx-3 w-1 h-1 rounded-full bg-current align-middle" />
+          Joydeep Sengupta &copy; 2077
+          <span className="inline-block mx-3 w-1 h-1 rounded-full bg-current align-middle" />
+          K&oslash;benhavn, Danmark
         </p>
       </div>
     </div>

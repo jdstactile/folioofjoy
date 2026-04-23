@@ -51,6 +51,23 @@ export function PatternGuide({ active, restartKey }: PatternGuideProps) {
             <p className="text-base font-sans text-white/60 leading-relaxed">{step.text}</p>
           </div>
         ))}
+        <div
+          className="transition-opacity duration-700 ease-out pt-2"
+          style={{ opacity: allVisible ? 1 : 0 }}
+        >
+          <p className="text-sm font-sans text-white/40 italic leading-relaxed">
+            Inspired by Colin Morris'{' '}
+            <a
+              href="https://github.com/colinmorris/SongSim"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 hover:text-white/70 pointer-events-auto"
+            >
+              SongSim
+            </a>
+            {' '}project.
+          </p>
+        </div>
       </div>
 
       {/* Mobile: bottom, all visible immediately */}
@@ -61,6 +78,21 @@ export function PatternGuide({ active, restartKey }: PatternGuideProps) {
               <p className="text-sm font-sans text-white/60 leading-relaxed">{step.text}</p>
             </div>
           ))}
+
+          <div className="mt-2">
+            <p className="text-sm font-sans text-white/40 italic leading-relaxed">
+              Inspired by Colin Morris'{' '}
+              <a
+                href="https://github.com/colinmorris/SongSim"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline underline-offset-2 hover:text-white/70 pointer-events-auto"
+              >
+                SongSim
+              </a>
+              {' '}project.
+            </p>
+          </div>
 
           {/* Mobile-only note */}
           <div className="mt-4">

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { MobileGallery } from './mobile-gallery';
 
@@ -10,6 +11,10 @@ interface WorkItem {
 }
 
 const WORK_ITEMS: WorkItem[] = [
+  { src: '/work/project-01.png', caption: 'Onboarding for an AI home-management app — made the welcome screen feel like arriving home, not signing up for one.' },
+  { src: '/work/project-02.png', caption: 'Mobile loan application — turned six screens of underwriting into something you would actually finish on the bus.' },
+  { src: '/work/project-03.png', caption: 'Home maintenance setup on mobile — a list of what-to-fix that reads like a to-do, not a contract.' },
+  { src: '/work/project-04.png', caption: 'The Figma file engineering lived in — every screen, every annotation, every spec they did not have to ask twice about.' },
   { src: '/work/carbondash-01.png', caption: 'Pitched the whole visual identity and shipped the marketing site in three weeks flat.' },
   { src: '/work/netflix-01.png', caption: 'Internal tool for content ops — made the upload queue something people stopped complaining about.' },
   { src: '/work/verizon-red.png', caption: 'Retail inventory scanner that warehouse staff actually wanted to use instead of the clipboard.' },
@@ -49,6 +54,7 @@ export function WorkLink() {
   const [carouselVisible, setCarouselVisible] = useState(false);
   const [captionKey, setCaptionKey] = useState(0);
   const [zoomedIdx, setZoomedIdx] = useState<number | null>(null);
+  const [zoomOrigin, setZoomOrigin] = useState<{ x: number; y: number }>({ x: 50, y: 50 });
 
   const next = useCallback(() => { setCurrentIndex((i) => (i + 1) % WORK_ITEMS.length); setCaptionKey((k) => k + 1); }, []);
   const prev = useCallback(() => { setCurrentIndex((i) => (i - 1 + WORK_ITEMS.length) % WORK_ITEMS.length); setCaptionKey((k) => k + 1); }, []);
@@ -127,9 +133,9 @@ export function WorkLink() {
       <MobileGallery items={WORK_ITEMS} open={mobileOpen} onClose={() => setMobileOpen(false)} />
 
       {/* Desktop: carousel */}
-      {carouselMounted && (
+      {carouselMounted && typeof document !== 'undefined' && createPortal((
         <div className={`fixed inset-0 z-[100] flex items-center justify-center transition-opacity duration-400 ease-out ${carouselVisible ? 'opacity-100' : 'opacity-0'}`} onClick={closeCarousel}>
-          <div className={`absolute inset-0 bg-black/90 backdrop-blur-sm transition-all duration-400 ${carouselVisible ? 'opacity-100' : 'opacity-0'}`} />
+          <div className={`absolute inset-0 bg-black backdrop-blur-xl transition-all duration-400 ${carouselVisible ? 'opacity-100' : 'opacity-0'}`} />
 
           <button onClick={closeCarousel} className={`absolute top-6 left-6 z-10 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300 ${carouselVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`} style={{ transitionDelay: carouselVisible ? '200ms' : '0ms' }}>
             <X className="w-5 h-5 text-white" />
@@ -162,12 +168,31 @@ export function WorkLink() {
                       pointerEvents: isVisible ? 'auto' : 'none',
                     }}
                     onClick={(e) => { e.stopPropagation(); if (offset === -1) prev(); else if (offset === 1) next(); else setZoomedIdx(zoomedIdx === idx ? null : idx); }}
-                    onMouseEnter={() => { if (isCenter) setZoomedIdx(idx); }}
+                    onMouseEnter={(e) => {
+                      if (!isCenter) return;
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      setZoomOrigin({
+                        x: ((e.clientX - rect.left) / rect.width) * 100,
+                        y: ((e.clientY - rect.top) / rect.height) * 100,
+                      });
+                      setZoomedIdx(idx);
+                    }}
+                    onMouseMove={(e) => {
+                      if (!isCenter || zoomedIdx !== idx) return;
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      setZoomOrigin({
+                        x: ((e.clientX - rect.left) / rect.width) * 100,
+                        y: ((e.clientY - rect.top) / rect.height) * 100,
+                      });
+                    }}
                     onMouseLeave={() => { if (zoomedIdx === idx) setZoomedIdx(null); }}
                   >
                     <img src={item.src} alt={item.caption}
                       className="shadow-2xl border border-white/10 object-contain max-h-[60vh] max-w-full transition-transform duration-500 ease-out"
-                      style={{ transform: zoomedIdx === idx ? 'scale(1.5)' : 'scale(1)' }} />
+                      style={{
+                        transform: zoomedIdx === idx ? 'scale(1.8)' : 'scale(1)',
+                        transformOrigin: `${zoomOrigin.x}% ${zoomOrigin.y}%`,
+                      }} />
                   </div>
                 );
               })}
@@ -178,7 +203,7 @@ export function WorkLink() {
             </p>
           </div>
         </div>
-      )}
+      ), document.body)}
     </>
   );
 }
