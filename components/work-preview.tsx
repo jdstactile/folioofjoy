@@ -25,6 +25,8 @@ const WORK_ITEMS: WorkItem[] = [
   { src: '/work/dribbble-10.jpg', caption: 'Neighborhood stats dashboard — donut charts that actually earned their keep.' },
   { src: '/work/dribbble-01.jpg', caption: 'Release changelog that tells you what broke and what got better, at a glance.' },
   { src: '/work/dribbble-06.jpg', caption: 'Feature flag cards — dark mode and light mode, because designers have opinions about both.' },
+  { src: '/work/tactile-create-01.png', caption: 'Home page for Tactile Create — illustrated every shortcut card so starting a GDD, a canvas, or a storyboard feels like picking from a shelf, not filling out a form.' },
+  { src: '/work/tactile-create-02.png', caption: 'Same home page, light mode — intentionally left everything untitled because the whole point is letting people make scrappy docs first and name them later.' },
 ];
 
 const PREVIEW_IMAGES = WORK_ITEMS.slice(0, 4);
