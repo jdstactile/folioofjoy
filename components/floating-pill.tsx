@@ -177,7 +177,7 @@ export function FloatingPill({
             <button
               onClick={() => { setIsOpen(!isOpen); }}
               className={`flex items-center gap-2 p-1.5 rounded-full transition-all flex-shrink-0 ${
-                isOpen ? 'bg-white/15 text-white' : 'hover:bg-white/10'
+                isOpen ? 'bg-white/15 hover:bg-white/20 text-white' : 'hover:bg-white/10'
               }`}
               title={currentTrack ? `${currentTrack.name} — ${currentTrack.artists[0]?.name}` : 'Song queue'}
             >
@@ -219,7 +219,7 @@ export function FloatingPill({
 
               {/* Mute */}
               <span className="relative flex-shrink-0">
-                <button onClick={() => { onToggleMute(); setShowUnmuteTip(false); }} className={`p-1.5 rounded-full transition-all ${isMuted ? 'text-white/40 hover:bg-white/10' : 'bg-white/15 text-white'}`} title={isMuted ? 'Unmute' : 'Mute'}>
+                <button onClick={() => { onToggleMute(); setShowUnmuteTip(false); }} className={`p-1.5 rounded-full transition-all ${isMuted ? 'text-white/40 hover:bg-white/10' : 'bg-white/15 hover:bg-white/20 text-white'}`} title={isMuted ? 'Unmute' : 'Mute'}>
                   {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
                 </button>
                 {showUnmuteTip && isMuted && expanded && (
@@ -243,7 +243,7 @@ export function FloatingPill({
               </button>
 
               {/* Accessibility */}
-              <button onClick={onToggleDimmed} className={`p-1.5 rounded-full transition-all flex-shrink-0 ${dimmed ? 'bg-white/15 text-white' : 'hover:bg-white/10 text-white/70'}`} title={dimmed ? 'Full brightness' : 'Dim pattern'}>
+              <button onClick={onToggleDimmed} className={`p-1.5 rounded-full transition-all flex-shrink-0 ${dimmed ? 'bg-white/15 hover:bg-white/20 text-white' : 'hover:bg-white/10 text-white/70'}`} title={dimmed ? 'Full brightness' : 'Dim pattern'}>
                 <Accessibility className="w-3.5 h-3.5" />
               </button>
 

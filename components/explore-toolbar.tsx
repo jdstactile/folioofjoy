@@ -68,7 +68,7 @@ function OptionGroup({
             onClick={() => onSelect(opt.value)}
             className={`px-3 py-1.5 rounded-lg text-xs font-sans text-left transition-all ${
               value === opt.value
-                ? 'bg-white/15 text-white'
+                ? 'bg-white/15 hover:bg-white/20 text-white'
                 : 'text-white/40 hover:text-white/70 hover:bg-white/5'
             }`}
           >
@@ -147,7 +147,7 @@ export function ExploreToolbar({
           <button onClick={onPlayNext} className="p-1.5 hover:bg-white/10 rounded-full transition-all" title="Next">
             <SkipForward className="w-3.5 h-3.5 text-white/70" />
           </button>
-          <button onClick={onToggleMute} className={`p-1.5 rounded-full transition-all ${isMuted ? 'text-white/40 hover:bg-white/10' : 'bg-white/15 text-white'}`} title={isMuted ? 'Unmute' : 'Mute'}>
+          <button onClick={onToggleMute} className={`p-1.5 rounded-full transition-all ${isMuted ? 'text-white/40 hover:bg-white/10' : 'bg-white/15 hover:bg-white/20 text-white'}`} title={isMuted ? 'Unmute' : 'Mute'}>
             {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
           </button>
           <span className="text-[10px] font-mono text-white/30 ml-auto">{formatTime(currentTime)}</span>

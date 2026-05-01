@@ -214,7 +214,7 @@ export function SongAnalyzer() {
         {/* Desktop: "What's this pattern?" — top right */}
         <button
           onClick={() => { if (exploreMode) exitExplore(); else enterExplore(); }}
-          className={`hidden md:flex fixed top-6 right-6 z-50 items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${exploreMode ? 'text-white' : 'text-white/50 hover:text-white'}`}
+          className={`hidden md:flex fixed top-6 right-6 z-50 items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${exploreMode ? 'text-white hover:bg-white/10' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
         >
           {exploreMode ? (<><X className="w-4 h-4" /><span className="text-sm font-sans">Back</span></>) : (<><HelpCircle className="w-4 h-4" /><span className="text-sm font-sans">What&apos;s this pattern?</span></>)}
         </button>
