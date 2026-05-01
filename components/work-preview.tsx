@@ -12,9 +12,9 @@ interface WorkItem {
 
 const WORK_ITEMS: WorkItem[] = [
   { src: '/work/project-01.png', caption: 'AI home-management app — made the welcome screen feel like arriving home, not signing up for one.' },
-  { src: '/work/project-02.png', caption: 'Mobile loan application — turned six screens of underwriting into something you'd finish on the bus.' },
+  { src: '/work/project-02.png', caption: 'Mobile loan application — turned six screens of underwriting into something you would actually finish on the bus.' },
   { src: '/work/project-03.png', caption: 'Home maintenance on mobile — a fix-it list that reads like a to-do, not a contract.' },
-  { src: '/work/project-04.png', caption: 'The Figma file engineering lived in — every spec they didn't have to ask twice about.' },
+  { src: '/work/project-04.png', caption: 'The Figma file engineering lived in — every spec they never had to ask twice about.' },
   { src: '/work/carbondash-01.png', caption: 'Pitched the visual identity and shipped the marketing site in three weeks flat.' },
   { src: '/work/netflix-01.png', caption: 'Internal tool for content ops — made the upload queue something people stopped complaining about.' },
   { src: '/work/verizon-red.png', caption: 'Retail inventory scanner that warehouse staff actually wanted to use instead of the clipboard.' },
@@ -43,7 +43,7 @@ const WORK_ITEMS: WorkItem[] = [
   { src: '/work/battalion-hero.png', caption: 'Proptech hero — isometric buildings, a search bar, enough personality to not look like every other SaaS.' },
   { src: '/work/platform-illustration.png', caption: 'Platform illustration — abstract enough for a landing page, specific enough to hint at the product.' },
   { src: '/work/battalion-messages.png', caption: 'Lender-broker message centre — threaded by property, because that matters more than timestamps.' },
-  { src: '/work/urbyn-development.png', caption: 'Zoning overlay — shows what's getting built nearby before the construction noise does.' },
+  { src: '/work/urbyn-development.png', caption: 'Zoning overlay — shows what is getting built nearby before the construction noise does.' },
   { src: '/work/data-dashboard-docs.png', caption: 'Onboarding cards for a datamarts tool — naming conventions and dimensions, illustrated so dry content lands.' },
 ];
 
